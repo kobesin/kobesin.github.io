@@ -68,7 +68,7 @@ function queryYouBike() {
   $('#bikeRefresh').addClass('fa-spin');
 
   $.ajax({
-    url: 'http://lamperder.2fh.co/proxy.php?requrl=http%3A%2F%2Fopendata.dot.taipei.gov.tw%2Fopendata%2Fgwjs_cityhall.json',
+    url: 'http://www.corsproxy.com/opendata.dot.taipei.gov.tw/opendata/gwjs_cityhall.json',
     async: true,
     dataType: "json"
   }).done(function(json) {
