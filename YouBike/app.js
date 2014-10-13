@@ -68,7 +68,7 @@ function queryYouBike() {
   $('#bikeRefresh').addClass('fa-spin');
 
   $.ajax({
-    url: 'https://jsonp.nodejitsu.com/?url=http%3A%2F%2Fopendata.dot.taipei.gov.tw%2Fopendata%2Fgwjs_cityhall.json',
+    url: 'http://lamperder.2fh.co/proxy.php?requrl=http%3A%2F%2Fopendata.dot.taipei.gov.tw%2Fopendata%2Fgwjs_cityhall.json',
     async: true,
     dataType: "json"
   }).done(function(json) {
@@ -93,6 +93,7 @@ function queryYouBike() {
         }).addTo(bikeLayer);
 
         var popupContent = [];
+        popupContent.push('資料更新時間：' + mdDate.toLocaleString())
         popupContent.push('啟用時間：' + sdDate.toLocaleString());
         popupContent.push('場站代號：' + data.sno);
         popupContent.push('場站名稱：' + data.sna);
