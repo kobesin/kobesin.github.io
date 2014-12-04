@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Choices Helper</title>
+  <link rel="stylesheet" href="../../assets/lib/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../assets/css/lumen-bootstrap.css">  
+  <link rel="stylesheet" href="../../assets/css/keen-dashboards.css">
+  <!-- Load Leaflet from CDN-->
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <style type="text/css">
+  body{
+    font-family: 微軟正黑體;
+  }
+
+  #map .leaflet-marker-icon{
+    text-shadow: -1px 0 #fff,0 1px #fff,1px 0 #fff,0 -1px #fff;
+    color: #0ABAB5;
+  }
+
+  #map .leaflet-marker-icon.glyphicon-user{
+    color: #ff0000;
+  }
+
+  #taCheck label{
+    margin: 4px;
+  }
+  </style>
+
+</head>
+<body class="application" style="overflow-x: hidden;">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            列表
+          </div>
+          <div class="chart-stage">
+            <div style="height: 650px; overflow-y: auto;">
+              <div class="panel-group" id="taList" role="tablist" aria-multiselectable="true"></div>
+            </div>
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-9">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                圖台
+              </div>
+              <div class="chart-stage">
+                <div id="map" style="height: 240px;"></div>
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                出發位置
+              </div>
+              <div class="chart-stage">
+                <div style="height: 120px;">
+                  <p><button type="button" class="btn btn-primary btn-xs" onclick="geoLoc();">自己位置</button></p><p><button type="button" class="btn btn-primary btn-xs" onclick="geoLoc();">點擊地圖</button></p></div>
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                距離
+              </div>
+              <div class="chart-stage">
+                <img data-src="holder.js/100%x120/white">
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                Cell Title
+              </div>
+              <div class="chart-stage">
+                <img data-src="holder.js/100%x120/white">
+              </div>              
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                分類
+              </div>
+              <div class="chart-stage">
+                <div id="taCheck" style="height: 120px; overflow-y: auto;"  class="btn-group" data-toggle="buttons"></div>
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                Cell Title
+              </div>
+              <div class="chart-stage">
+                <img data-src="holder.js/100%x120/white">
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="../../assets/lib/jquery/dist/jquery.min.js"></script>
+  <script src="../../assets/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <script src="../../assets/lib/holderjs/holder.js"></script>
+  <script>
+    Holder.add_theme("white", {
+      background: "#fff",
+      foreground: "#a7a7a7",
+      size: 10
+    });
+    var map = new L.Map('map',{
+      maxZoom: 20
+    }).setView([25.0858, 121.5211], 10);
+    L.tileLayer('http://mt{s}.google.com/vt/x={x}&y={y}&z={z}', {
+      detectRetina: true,
+      subdomains: '012',
+      maxZoom: 20
+    }).addTo(map);
+
+    var taLayer = L.layerGroup().addTo(map);
+
+    //台北景點
+    $.ajax({
+      url: '/json/TaipeiTA.json',
+      async: true,
+      dataType: 'json'
+    }).done(function(json) {
+      console.log(json);
+      var listUI = "",
+        cat2 = [],
+        cat2Button = [];
+      json.forEach(function(ta) {
+        var layer = L.marker([ta.latitude, ta.longitude], {
+          icon: L.divIcon({
+            className: 'glyphicon glyphicon-tower',
+            iconSize: [12, 14],
+            iconAnchor: [6, 7]
+          })
+        }).addTo(taLayer);
+
+        var popupContent = [];
+        popupContent.push('名稱：' + ta.stitle)
+        popupContent.push('資訊網頁：<a href="' + ta.xurl + '" target="_blank">連結</a>');
+        popupContent.push('地址：' + ta.address);
+        layer.bindPopup(popupContent.join('<br>'));
+
+        var index = L.Util.stamp(layer);
+        listUI += list(ta, index);
+
+        if (cat2.indexOf(ta.cat2) == -1){
+          cat2.push(ta.cat2);
+          cat2Button.push('<label class="btn btn-primary btn-xs active"><input type="checkbox" name="cat" value="' + ta.cat2 + '"autocomplete="off" checked>' + ta.cat2 + '</label>');
+        }
+      });
+      document.getElementById('taList').innerHTML = listUI;
+      document.getElementById('taCheck').innerHTML = cat2Button.join('');
+
+
+      function list(ta, index) {
+        var getloc = '<p><button type="button" class="btn btn-primary btn-xs" onclick="taLoc(' + index + ');">地圖位置</button></p>';
+
+        var ui = '<div class="panel panel-info"><div class="panel-heading" role="tab" id="heading' + index + '"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse' + index + '" aria-expanded="false" aria-controls="collapse' + index + '">' +
+          ta.stitle + '</a></h4></div><div id="collapse' + index + '" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading' + index + '"><div class="panel-body">' + getloc + ta.xbody + '</div></div></div>';
+        return ui;
+      }
+    });
+
+    function taLoc(id) {
+      var ta = taLayer.getLayer(id);
+      ta.openPopup();
+      map.setView(ta.getLatLng(), 17);
+    }
+
+    var startLoc;
+    function geoLoc(){
+      if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+        
+        startLoc = L.marker([position.coords.latitude, position.coords.longitude], {
+          icon: L.divIcon({
+            className: 'glyphicon glyphicon-user',
+            iconSize: [12, 14],
+            iconAnchor: [6, 7]
+              }), draggable: true
+          }).addTo(map);
+
+        map.setView(startLoc.getLatLng(), 18);
+        });
+          }
+         else {
+            alert("抱歉，你的瀏覽器不支援此功能");
+        }
+    }
+
+    function clickLoc() {
+      if (startLoc){
+
+      }
+    }    
+  </script>
+
+</body>
+</html>
