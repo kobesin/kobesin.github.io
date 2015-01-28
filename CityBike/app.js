@@ -106,7 +106,7 @@ function getBikeJsons() {
 
   youBikeLayer.clearLayers();
   var youbike = $.ajax({
-    url: 'http://lamperder.2fh.co/json/YouBike.php',
+    url: 'http://lamperder.herokuapp.com/YouBike.php',
     async: true,
     dataType: "json"
   }).done(function(json) {
@@ -147,7 +147,7 @@ function getBikeJsons() {
 
   cBikeLayer.clearLayers();
   var cbike = $.ajax({
-    url: 'http://lamperder.2fh.co/json/C-Bike.php',
+    url: 'http://lamperder.herokuapp.com/C-Bike.php',
     async: true,
     dataType: "json"
   }).done(function(json) {
@@ -180,7 +180,7 @@ function getBikeJsons() {
 
   pBikeLayer.clearLayers();
   var pbike = $.ajax({
-    url: 'http://lamperder.2fh.co/json/P-Bike.php',
+    url: 'http://lamperder.herokuapp.com/P-Bike.php',
     async: true,
     dataType: "json"
   }).done(function(json) {
