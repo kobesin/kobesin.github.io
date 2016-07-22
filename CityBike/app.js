@@ -1,6 +1,9 @@
-var youBikeLayer = L.layerGroup(),
-  cBikeLayer = L.layerGroup(),
-  pBikeLayer = L.layerGroup();
+var apiCount = 4;
+var youBikeLayer = L.layerGroup();
+var youBikeLayer2 = L.layerGroup();
+
+var cBikeLayer = L.layerGroup();
+var pBikeLayer = L.layerGroup();
 
 var baseMaps = {
   "OpenStreetMap": L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
@@ -11,13 +14,14 @@ var baseMaps = {
 
 var map = L.map('map', {
   worldCopyJump: true,
-  layers: [baseMaps.OpenStreetMap, youBikeLayer, cBikeLayer, pBikeLayer]
+  layers: [baseMaps.OpenStreetMap, youBikeLayer, youBikeLayer2, cBikeLayer, pBikeLayer]
 }).setView([25.0508, 121.5539], 12);
 
 L.control.layers(baseMaps, {
-  'Youbuke': youBikeLayer,
-  'C-Bike': cBikeLayer,
-  'P-Bike': pBikeLayer
+  'Youbike(台北)': youBikeLayer,
+  'Youbike(新北)': youBikeLayer2,
+  'C-Bike(高雄)': cBikeLayer,
+  'P-Bike(屏東)': pBikeLayer
 }).addTo(map);
 
 //更新youbike資料
@@ -31,6 +35,7 @@ refresh.onAdd = function(map) {
     .addListener(controlDiv, 'click', L.DomEvent.preventDefault)
     .addListener(controlDiv, 'click', function() {
       if (!this.querySelector('i').classList.contains('fa-spin')) {
+        apiCount = 4;
         getBikeJsons();
       }
     });
@@ -61,8 +66,8 @@ legend.onAdd = function(map) {
   for (var i = 0; i < grades.length; i++) {
     div.innerHTML +=
       '<i class="fa fa-bicycle" style="color:' + bikeColor(grades[i]) + '"></i> ' +
-    //grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-    labels[i] + (grades[i + 1] ? '<br>' : '');
+      //grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+      labels[i] + (grades[i + 1] ? '<br>' : '');
   }
   return div;
 };
@@ -104,79 +109,53 @@ getBikeJsons();
 function getBikeJsons() {
   $('#bikeRefresh i').addClass('fa-spin');
 
+  //taipei
   youBikeLayer.clearLayers();
-  var youbike = $.ajax({
-    url: 'http://lamperder.herokuapp.com/YouBike.php',
+  var youbike1 = $.ajax({
+    url: 'https://crossorigin.me/http://data.taipei/youbike',
     async: true,
     dataType: "json"
   }).done(function(json) {
-    if (json.datas) {
-      var datas = json.datas;
-
-      for (var d in datas) {
-        var data = datas[d];
-        var md = data.mday,
-          mdDate = new Date(md.slice(0, 4), md.slice(4, 6), md.slice(6, 8), md.slice(8, 10), md.slice(10, 12), md.slice(12, 14), 0);
-
-        var layer = L.marker([data.lat, data.lng], {
-          icon: L.divIcon({
-            // className: 'icon-youbike fa fa-bicycle',
-            // iconSize: [26, 20],
-            // iconAnchor: [13, 10]
-            className: '',
-            iconSize: [26, 20],
-            iconAnchor: [13, 10],
-            html: '<i class="icon-youbike fa fa-bicycle" style="color: ' + bikeColor(Number(data.sbi)) + ';"></i>'
-          })
-        }).addTo(youBikeLayer);
-
-        var popupContent = [];
-        popupContent.push('資料更新時間：' + mdDate.toLocaleString())
-        popupContent.push('場站代號：' + data.sno);
-        popupContent.push('場站名稱：' + data.sna);
-        popupContent.push('場站區域：' + data.sarea);
-        popupContent.push('地址：' + data.ar);
-        popupContent.push('車輛狀況(目前車輛/總停車格)：' + data.sbi + '/' + data.tot);
-        popupContent.push('空位數量：' + data.bemp);
-        layer.bindPopup(popupContent.join('<br>'));
-      }
+    if (json.retVal) {
+      var retVal = json.retVal;
+      bikeApiFormat1(youBikeLayer, retVal);
     }
   }).error(function() {
     alert("目前無法取得Youbike資料，請稍候再試一次");
-  });
+  }).always(function() {
+    checkAllFinish();
+  });;
 
-  cBikeLayer.clearLayers();
-  var cbike = $.ajax({
-    url: 'http://lamperder.herokuapp.com/C-Bike.php',
+
+  //new taipei
+  youBikeLayer2.clearLayers();
+  var youbike2 = $.ajax({
+    url: 'https://crossorigin.me/http://data.ntpc.gov.tw/api/v1/rest/datastore/382000000A-000352-001',
     async: true,
     dataType: "json"
   }).done(function(json) {
-    if (json.datas && json.datas.BIKEStation.Station.length > 0) {
-      var datas = json.datas.BIKEStation.Station;
-
-      datas.forEach(function(data) {
-        var layer = L.marker([data.StationLat, data.StationLon], {
-          icon: L.divIcon({
-            className: '',
-            iconSize: [26, 20],
-            iconAnchor: [13, 10],
-            html: '<i class="icon-youbike fa fa-bicycle" style="color: ' + bikeColor(Number(data.StationNums1)) + ';"></i>'
-          })
-        }).addTo(cBikeLayer);
-
-        var popupContent = [];
-        popupContent.push('租賃站名稱：' + data.StationName)
-        popupContent.push('場站描述：' + data.StationDesc);
-        popupContent.push('地址：' + data.StationAddress);
-        popupContent.push('車輛狀況(目前車輛)：' + data.StationNums1);
-        popupContent.push('空位數量：' + data.StationNums2);
-        popupContent.push('<img src="' + data.StationPic + '" width="120" height="80">');
-        layer.bindPopup(popupContent.join('<br>'));
-      });
+    if (json.result && json.result.records) {
+      var retVal = json.result.records;
+      bikeApiFormat1(youBikeLayer2, retVal);
     }
   }).error(function() {
+    alert("目前無法取得Youbike資料，請稍候再試一次");
+  }).always(function() {
+    checkAllFinish();
+  });;
+
+  cBikeLayer.clearLayers();
+  var cbike = $.ajax({
+    url: 'http://www.c-bike.com.tw/xml/stationlistopendata.aspx',
+    async: true,
+    dataType: "xml"
+  }).done(function(xml) {
+    bikeApiFormat2(cBikeLayer, $("Station", xml));
+  }).error(function() {
     alert("目前無法取得c-bike資料，請稍候再試一次");
-  });
+  }).always(function() {
+    checkAllFinish();
+  });;
 
   pBikeLayer.clearLayers();
   var pbike = $.ajax({
@@ -185,10 +164,10 @@ function getBikeJsons() {
     dataType: "json"
   }).done(function(json) {
     if (json.datas) {
-      var datas = json.datas.content.split('*'),
-        coordinates = json.datas.coordinate.split('*');
+      var totalData = json.datas.content.split('*');
+      var coordinates = json.datas.coordinate.split('*');
 
-      datas.forEach(function(data, index) {
+      totalData.forEach(function(data, index) {
         var latlng = coordinates[index].split(','),
           content = data.split('#');
         var layer = L.marker([latlng[0], latlng[1]], {
@@ -210,10 +189,61 @@ function getBikeJsons() {
     }
   }).error(function() {
     alert("目前無法取得p-bike資料，請稍候再試一次");
+  }).always(function() {
+    checkAllFinish();
   });
 
-  $.when(youbike, cbike, pbike).done(function() {
-    $('#bikeRefresh i').removeClass('fa-spin');
+  // $.when(youbike, cbike, pbike).done(function() {
+  //   $('#bikeRefresh i').removeClass('fa-spin');
+  // });
+}
+
+function bikeApiFormat1(layerGroup, totalData) {
+  for (var d in totalData) {
+    var data = totalData[d];
+    var md = data.mday;
+    var mdDate = new Date(md.slice(0, 4), md.slice(4, 6), md.slice(6, 8), md.slice(8, 10), md.slice(10, 12), md.slice(12, 14), 0);
+
+    var layer = L.marker([data.lat, data.lng], {
+      icon: L.divIcon({
+        className: '',
+        iconSize: [26, 20],
+        iconAnchor: [13, 10],
+        html: '<i class="icon-youbike fa fa-bicycle" style="color: ' + bikeColor(Number(data.sbi)) + ';"></i>'
+      })
+    }).addTo(layerGroup);
+
+    var popupContent = [];
+    popupContent.push('資料更新時間：' + mdDate.toLocaleString())
+    popupContent.push('場站代號：' + data.sno);
+    popupContent.push('場站名稱：' + data.sna);
+    popupContent.push('場站區域：' + data.sarea);
+    popupContent.push('地址：' + data.ar);
+    popupContent.push('車輛狀況(目前車輛/總停車格)：' + data.sbi + '/' + data.tot);
+    popupContent.push('空位數量：' + data.bemp);
+    layer.bindPopup(popupContent.join('<br>'));
+  }
+}
+
+function bikeApiFormat2(layerGroup, totalData) {
+  totalData.each(function(index, data) {
+    var layer = L.marker([$("StationLat", data).text(), $("StationLon", data).text()], {
+      icon: L.divIcon({
+        className: '',
+        iconSize: [26, 20],
+        iconAnchor: [13, 10],
+        html: '<i class="icon-youbike fa fa-bicycle" style="color: ' + bikeColor(Number($("StationNums1", data).text())) + ';"></i>'
+      })
+    }).addTo(cBikeLayer);
+
+    var popupContent = [];
+    popupContent.push('租賃站名稱：' + $("StationName", data).text());
+    popupContent.push('場站描述：' + $("StationDesc", data).text());
+    popupContent.push('地址：' + $("StationAddress", data).text());
+    popupContent.push('車輛狀況(目前車輛)：' + $("StationNums1", data).text());
+    popupContent.push('空位數量：' + $("StationNums2", data).text());
+    popupContent.push('<img src="' + $("StationPic", data).text() + '" width="120" height="80">');
+    layer.bindPopup(popupContent.join('<br>'));
   });
 }
 
@@ -237,4 +267,11 @@ function bikeColor(count) {
       break;
   }
   return color;
+}
+
+function checkAllFinish() {
+  apiCount -= 1;
+  if (apiCount === 0) {
+    $('#bikeRefresh i').removeClass('fa-spin');
+  }
 }
