@@ -2,9 +2,9 @@
 <html>
 <head>
   <title>Choices Helper</title>
-  <link rel="stylesheet" href="assets/lib/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="assets/css/lumen-bootstrap.css">  
-  <link rel="stylesheet" href="assets/css/keen-dashboards.css">
+  <link rel="stylesheet" href="assets/lib/bootstrap/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="assets/css/lumen-bootstrap.css"/>  
+  <link rel="stylesheet" href="assets/css/keen-dashboards.css"/>
   <!-- Load Leaflet from CDN-->
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
   <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
@@ -83,7 +83,7 @@
                 距離
               </div>
               <div class="chart-stage">
-                <img data-src="holder.js/100%x120/white">
+                <img data-src="holder.js/100%x120/white"/>
               </div>
               <div class="chart-notes">
                 Notes about this chart
@@ -96,7 +96,7 @@
                 Cell Title
               </div>
               <div class="chart-stage">
-                <img data-src="holder.js/100%x120/white">
+                <img data-src="holder.js/100%x120/white"/>
               </div>              
               <div class="chart-notes">
                 Notes about this chart
@@ -124,7 +124,7 @@
                 Cell Title
               </div>
               <div class="chart-stage">
-                <img data-src="holder.js/100%x120/white">
+                <img data-src="holder.js/100%x120/white"/>
               </div>
               <div class="chart-notes">
                 Notes about this chart
@@ -181,14 +181,14 @@
         popupContent.push('名稱：' + ta.stitle)
         popupContent.push('資訊網頁：<a href="' + ta.xurl + '" target="_blank">連結</a>');
         popupContent.push('地址：' + ta.address);
-        layer.bindPopup(popupContent.join('<br>'));
+        layer.bindPopup(popupContent.join('<br/>'));
 
         var index = L.Util.stamp(layer);
         listUI += list(ta, index);
 
         if (cat2.indexOf(ta.cat2) == -1){
           cat2.push(ta.cat2);
-          cat2Button.push('<label class="btn btn-primary btn-xs active"><input type="checkbox" name="cat" value="' + ta.cat2 + '"autocomplete="off" checked>' + ta.cat2 + '</label>');
+          cat2Button.push('<label class="btn btn-primary btn-xs active"><input type="checkbox" name="cat" value="' + ta.cat2 + '"autocomplete="off" checked/>' + ta.cat2 + '</label>');
         }
       });
       document.getElementById('taList').innerHTML = listUI;
